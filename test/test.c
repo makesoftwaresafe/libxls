@@ -109,6 +109,30 @@ int main(int argc, char *argv[])
 
     fclose(f);
     xls_showBookInfo(pWB);
+    xls_close_WS(pWS);
+    xls_close_WB(pWB);
+
+    /* Regression test for #104: a Root Entry whose mini stream is empty but
+     * whose start sector is 0 rather than ENDOFCHAIN. */
+    snprintf(path, sizeof(path), "%s/test/files/test2_empty_ministream.xls", srcdir ? srcdir : ".");
+    pWB=xls_open_file(path, "UTF-8", &code);
+    if (pWB == NULL) {
+        fprintf(stderr, "Unable to open %s: %s\n", path, xls_getError(code));
+        return 1;
+    }
+    pWS=xls_getWorkSheet(pWB,0);
+    if(!pWS) return 1;
+    if ((code = xls_parseWorkSheet(pWS)) != LIBXLS_OK) {
+        fprintf(stderr, "Error parsing worksheet: %s\n", xls_getError(code));
+        return 1;
+    }
+    if (pWS->rows.lastrow == 0 || pWS->rows.row[0].cells.cell[0].str == NULL ||
+            strcmp(pWS->rows.row[0].cells.cell[0].str, "a") != 0) {
+        fprintf(stderr, "Unexpected contents in %s\n", path);
+        return 1;
+    }
+    xls_close_WS(pWS);
+    xls_close_WB(pWB);
 
     return 0;
 }

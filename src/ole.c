@@ -557,6 +557,11 @@ static ssize_t ole2_read_body(OLE2 *ole) {
 			if(pss->sstart == ENDOFCHAIN) {
 				if (xls_debug) verbose("END OF CHAIN\n");
 			} else if(pss->type == PS_USER_STREAM) {
+			} else if(pss->type == PS_USER_ROOT && pss->size == 0) {
+				/* Empty mini stream. The spec says the start sector should be
+				 * ENDOFCHAIN, but some writers store 0 instead; there is
+				 * nothing to read either way (Fixes #104). */
+				if (xls_debug) verbose("EMPTY MINI STREAM\n");
 			} else if(pss->type == PS_USER_ROOT) {
 				DWORD sector, k, blocks;
 				BYTE *wptr;
