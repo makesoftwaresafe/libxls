@@ -689,7 +689,9 @@ char *xls_getfcell(xlsWorkBook* pWB, struct st_cell_data* cell, BYTE *label)
         ret = malloc(retlen);
         if (ret == NULL)
             return NULL;
-        snprintf(ret, retlen, "%lf", cell->d);
+        /* Up to 15 significant digits, like Excel and xls2csv; "%lf" truncated
+         * everything past six decimal places (Fixes #142) */
+        snprintf(ret, retlen, "%.15g", cell->d);
 		break;
 		//		if( RK || MULRK || NUMBER || FORMULA)
 		//		if (cell->id==0x27e || cell->id==0x0BD || cell->id==0x203 || 6 (formula))
